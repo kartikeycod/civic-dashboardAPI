@@ -1,0 +1,309 @@
+<section id="reportList">
+  <h2>All Reports</h2>
+
+  <!-- Filters -->
+  <div id="filters">
+    <label>Status:
+      <select id="filterStatus">
+        <option value="all">All</option>
+        <option value="open">Open</option>
+        <option value="closed">Closed</option>
+      </select>
+    </label>
+
+    <label>Type:
+      <select id="filterType">
+        <option value="all">All</option>
+        <option value="pothole">Pothole</option>
+        <option value="streetlight">Streetlight</option>
+        <option value="garbage">Garbage</option>
+      </select>
+    </label>
+
+    <button id="applyFilters">Apply Filters</button>
+  </div>
+
+  <!-- Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Ward</th>
+        <th>Reported On</th>
+        <th>Days Remaining</th>
+      </tr>
+    </thead>
+    <tbody id="reportTableBody"></tbody>
+  </table>
+</section>
+
+    
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Ward</th>
+          <th>Reported On</th>
+          <th>Days Remaining</th>
+        </tr>
+      </thead>
+      <tbody id="reportTableBody"></tbody>
+    </table>
+  </section>
+
+
+
+
+  body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f0f2f5;
+}
+
+header {
+  background: #0077cc;
+  color: white;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.8em;
+}
+
+main {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 16px;
+  gap: 16px;
+  justify-content: center;
+}
+
+#formContainer, #mapContainer {
+  background: white;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+#formContainer {
+  flex: 1 1 300px;
+  max-width: 400px;
+}
+
+#mapContainer {
+  flex: 2 1 600px;
+  min-width: 300px;
+  height: 500px;
+}
+
+input, textarea, select, button {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1em;
+}
+
+button {
+  background: #0077cc;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #005fa3;
+}
+
+.inline {
+  display: flex;
+  gap: 8px;
+}
+
+.inline input {
+  flex: 1;
+}
+
+#reportList {
+  margin: 20px;
+  background: white;
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+#reportList h2 {
+  margin-top: 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background: #0077cc;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+
+
+const SUPABASE_URL = 'https://yaowdmntsglocynggnwb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlhb3dkbW50c2dsb2N5bmdnbndiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczNTIzNjUsImV4cCI6MjA3MjkyODM2NX0.mTEACBAYPLYpRGNEJMb19Ywb_KSd7RhRzPjUhCxJUtQ';
+
+const { createClient } = supabase;
+const supa = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ---------------- MAP SETUP ----------------
+const map = L.map('mapContainer').setView([28.6139, 77.2090], 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+const markers = L.layerGroup().addTo(map);
+const heat = L.heatLayer([], { radius: 25, blur: 15 }).addTo(map);
+
+const SLA_DAYS = 7;
+let showAllReports = true; // always show all since no auth
+const isAdmin = true;      // admin mode by default
+
+// ---------------- LOAD REPORTS ----------------
+async function loadReports() {
+  markers.clearLayers();
+  const tableBody = document.getElementById("reportTableBody");
+  tableBody.innerHTML = "";
+
+  try {
+    let { data, error } = await supa
+      .from('reports')
+      .select('*')
+      .order('reported_on', { ascending: false })
+      .limit(2000);
+
+    if (error) throw error;
+
+    const points = [];
+
+    data.forEach(r => {
+      if (r.lat && r.lon) {
+        const reportedDate = new Date(r.reported_on);
+        const now = new Date();
+        const daysPassed = Math.floor((now - reportedDate) / (1000 * 60 * 60 * 24));
+        const daysRemaining = Math.max(0, SLA_DAYS - daysPassed);
+
+        const popup = `
+          <b>${r.report_type}</b><br>
+          ${r.description || ''}<br>
+          <b>Status:</b> ${r.status || 'open'}<br>
+          <b>Days Remaining:</b> ${daysRemaining}<br>
+          <small>Reported: ${reportedDate.toLocaleString()}</small><br>
+          <small><b>User:</b> ${r.user_email || "N/A"}</small>
+        `;
+
+        L.marker([r.lat, r.lon]).bindPopup(popup).addTo(markers);
+        points.push([parseFloat(r.lat), parseFloat(r.lon), 1]);
+
+        const row = `
+          <tr>
+            <td>${r.report_type}</td>
+            <td>${r.description || ""}</td>
+            <td>${r.status || "open"}</td>
+            <td>${r.ward || ""}</td>
+            <td>${reportedDate.toLocaleString()}</td>
+            <td>${daysRemaining}</td>
+            <td>${r.user_email || ""}</td>
+          </tr>
+        `;
+        tableBody.innerHTML += row;
+      }
+    });
+
+    heat.setLatLngs(points);
+
+  } catch (e) {
+    alert('Error loading reports: ' + (e.message || e));
+  }
+}
+
+// ---------------- MAP CLICK ----------------
+map.on('click', e => {
+  document.getElementById('lat').value = e.latlng.lat.toFixed(6);
+  document.getElementById('lon').value = e.latlng.lng.toFixed(6);
+});
+
+// ---------------- SUBMIT REPORT ----------------
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const payload = {
+    report_type: document.getElementById('report_type').value,
+    description: document.getElementById('description').value,
+    ward: document.getElementById('ward').value,
+    lat: parseFloat(document.getElementById('lat').value),
+    lon: parseFloat(document.getElementById('lon').value),
+    user_email: document.getElementById('user_email').value || "anonymous"
+  };
+
+  if (!payload.lat || !payload.lon) { 
+    alert('Click on map or enter Lat/Lon!');
+    return; 
+  }
+
+  const { error } = await supa.from('reports').insert([payload]);
+  if (error) { 
+    alert('Insert failed: ' + error.message);
+    return; 
+  }
+
+  alert('Report submitted!');
+  loadReports();
+});
+
+// ---------------- RELOAD BUTTON ----------------
+document.getElementById('reloadBtn').addEventListener('click', loadReports);
+
+// ---------------- SEARCH ----------------
+async function goToLocation() {
+  const city = document.getElementById('city').value;
+  const locality = document.getElementById('locality').value;
+  if (!city && !locality) { 
+    alert('Enter city or locality'); 
+    return; 
+  }
+
+  const query = encodeURIComponent(`${locality}, ${city}`);
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data && data.length > 0) {
+      const { lat, lon } = data[0];
+      map.setView([parseFloat(lat), parseFloat(lon)], 14);
+    } else {
+      alert('Location not found!');
+    }
+  } catch (e) { 
+    alert('Geocoding error: ' + e.message); 
+  }
+}
+
+// ---------------- INITIAL LOAD ----------------
+loadReports();

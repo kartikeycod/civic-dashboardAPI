@@ -1,0 +1,106 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f0f2f5;
+}
+
+header {
+  background: #0077cc;
+  color: white;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.8em;
+}
+
+main {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 16px;
+  gap: 16px;
+  justify-content: center;
+}
+
+#formContainer, #mapContainer {
+  background: white;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+#formContainer {
+  flex: 1 1 300px;
+  max-width: 400px;
+}
+
+#mapContainer {
+  flex: 2 1 600px;
+  min-width: 300px;
+  height: 500px;
+}
+
+input, textarea, select, button {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1em;
+}
+
+button {
+  background: #0077cc;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #005fa3;
+}
+
+.inline {
+  display: flex;
+  gap: 8px;
+}
+
+.inline input {
+  flex: 1;
+}
+
+#reportList {
+  margin: 20px;
+  background: white;
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+#reportList h2 {
+  margin-top: 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background: #0077cc;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background: #f9f9f9;
+}

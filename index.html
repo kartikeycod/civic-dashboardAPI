@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Civic Issue Dashboard</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Civic Issue Dashboard</h1>
+    <p>Live reports of potholes & civic issues</p>
+  </header>
+
+  <main>
+    <!-- Form -->
+    <div id="formContainer">
+      <h2>Submit a Report</h2>
+
+      <!-- User Email -->
+      <input type="email" id="user_email" placeholder="Your Email" required />
+
+      <!-- Report Details -->
+      <input type="text" id="report_type" placeholder="Type (pothole, streetlight...)" required />
+      <textarea id="description" placeholder="Description"></textarea>
+      <input type="text" id="ward" placeholder="Ward" />
+      <input type="number" step="0.000001" id="lat" placeholder="Latitude" required />
+      <input type="number" step="0.000001" id="lon" placeholder="Longitude" required />
+
+      <button id="submitBtn">Submit Report</button>
+      <button id="reloadBtn">Reload Map</button>
+
+      <div id="adminControls" style="display:none; margin:10px 0;">
+        <button id="toggleViewBtn">Show All Reports</button>
+      </div>
+
+      <h3>Search Location</h3>
+      <div class="inline">
+        <input type="text" id="city" placeholder="City">
+        <input type="text" id="locality" placeholder="Locality">
+      </div>
+      <button onclick="goToLocation()">Go</button>
+    </div>
+
+    <!-- Map -->
+    <div id="mapContainer" style="height:600px;"></div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.min.js"></script>
+
+  <script src="script.js"></script>
+</body>
+</html>
