@@ -1,13 +1,34 @@
+/* General Reset */
 html, body {
   margin: 0;
   padding: 0;
-  height: 100%;
+  min-height: 100%;
   font-family: 'Segoe UI', Arial, sans-serif;
   background: #151627;
   box-sizing: border-box;
   color: #e1e8fc;
+  overflow-x: hidden;   /* only hide sideways scroll */
+  overflow-y: auto;     /* keep vertical scrolling */
 }
 
+/* Apply animated tricolor gradient globally */
+html, body, main, header, #formContainer, #mapContainer {
+  background: linear-gradient(145deg, #20082b, rgb(84, 63, 179), #011965);
+  background-size: 400% 400%;
+  animation: tricolorShift 14s ease infinite;
+}
+
+/* Gradient Animation */
+@keyframes tricolorShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+textarea {
+  min-height: 100px;   /* prevents collapsing */
+  resize: vertical;    /* allow user to stretch */
+}
 body, main {
   min-height: 100vh;
   min-width: 100vw;
@@ -15,7 +36,6 @@ body, main {
 
 /* Header */
 header {
-  background: linear-gradient(90deg, #5B247A 0%, #1b1c3a 100%);
   color: #f3e8ff;
   text-align: center;
   padding: 26px 0 17px 0;
@@ -31,7 +51,7 @@ header h1 {
 
 header p {
   font-size: 1.1em;
-  opacity: 0.65;
+  opacity: 0.8;
   font-weight: 500;
   margin: 0;
 }
@@ -41,7 +61,6 @@ main {
   display: flex;
   flex-direction: row;
   height: calc(100vh - 87px);
-  background: #17192e;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -49,7 +68,6 @@ main {
 
 /* Form-styled box */
 #formContainer {
-  background: #232442;
   border-radius: 18px 0 0 18px;
   padding: 35px 24px 23px 24px;
   min-width: 320px;
@@ -66,11 +84,12 @@ main {
 #formContainer h2 {
   margin-top: 0;
   font-size: 1.3em;
-  color: #82b4fb;
+  color: #fff;
   letter-spacing: 1px;
   font-weight: 600;
 }
 
+/* Inputs and buttons */
 input, textarea, select, button {
   width: 100%;
   margin-bottom: 14px;
@@ -81,112 +100,37 @@ input, textarea, select, button {
 }
 
 input[type="email"], input[type="text"], input[type="number"], textarea, select {
-  background: #18192e;
-  color: #e6eaff;
-  border: 2px solid #293061;
+  background: rgba(24, 25, 46, 0.75);
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.25);
   padding: 12px 14px;
   margin-top: 2px;
   font-weight: 500;
-  transition: border 0.18s;
-  box-shadow: 0 1px 4px #12143012;
+  transition: border 0.18s, background 0.18s;
 }
 
 input:focus, textarea:focus, select:focus {
-  border: 2px solid #5B247A;
-  background: #1f203a;
-}
-
-input[type="file"] {
-  padding: 8px 0;
-  color: #a5addd;
-  background: none;
-  border: none;
-  box-shadow: none;
-  margin-bottom: 12px;
-}
-
-textarea {
-  min-height: 65px;
-  resize: vertical;
-}
-
-select {
-  cursor: pointer;
-  background: #192a39;
-  color: #a5addd;
+  border: 2px solid #fff;
+  background: rgba(0,0,0,0.35);
 }
 
 button {
-  background: linear-gradient(90deg, #243b55 0%, #6636be 100%);
-  color: #dad7ff;
+  background: linear-gradient(90deg, #de20f3, rgb(158, 156, 156), #3e0cc6);
+  background-size: 300% 300%;
+  animation: tricolorShift 12s ease infinite;
+  color: #fff;
   font-weight: 700;
   margin-bottom: 8px;
-  box-shadow: 0 2px 10px #61209d25;
   font-size: 1.07em;
   padding: 13px 0;
   border: none;
   border-radius: 8px;
-  transition: background 0.16s;
+  transition: transform 0.2s;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.4);
 }
 
 button:hover {
-  background: linear-gradient(90deg, #3b307e 30%, #b26bea 80%);
-  color: #fff;
-}
-
-.inline {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.inline input {
-  flex: 1;
-  min-width: 0;
-}
-
-#adminControls {
-  margin: 10px 0 0 0;
-}
-
-#adminControls button {
-  background: #263a82;
-}
-
-#imagePreviewContainer {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  margin-bottom: 10px;
-}
-
-#imagePreview {
-  max-width: 100%;
-  max-height: 110px;
-  border-radius: 8px;
-  margin: 2px 0 7px 0;
-  box-shadow: 0 2px 12px #825ffa33;
-  display: none;
-}
-
-#submitStatus {
-  min-height: 24px;
-  font-size: 1.07em;
-  color: #34e095;
-  text-align: center;
-  margin-bottom: 12px;
-  font-weight: 600;
-  transition: color 0.2s;
-}
-
-#submitStatus.error {
-  color: #e37a9f;
-}
-#submitStatus img {
-  max-width: 110px;
-  max-height: 86px;
-  border-radius: 7px;
-  margin-top: 7px;
+  transform: scale(1.05);
 }
 
 /* Map */
@@ -195,11 +139,10 @@ button:hover {
   min-width: 290px;
   height: 100%;
   border-radius: 0 18px 18px 0;
-  background: #121427;
   z-index: 1;
   margin-left: 0;
   overflow: auto;
-  box-shadow: 1px 2px 14px #624cb02e inset;
+  box-shadow: 1px 2px 14px #0006 inset;
   position: relative;
 }
 
@@ -236,38 +179,24 @@ button:hover {
   #formContainer {
     padding: 18px 7px 12px 7px;
   }
-  #imagePreview {
-    max-width: 93vw;
-    max-height: 78px;
-  }
-  #submitStatus img {
-    max-width: 60vw;
-    max-height: 48px;
-  }
 }
 
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
-  background: #191a3b;
+  background: rgba(25,26,59,0.8);
 }
 ::-webkit-scrollbar-thumb {
   border-radius: 8px;
-  background: #352d6d91;
+  background: rgba(53,45,109,0.6);
+}
+#formContainer {
+  flex-shrink: 0;
+  overflow-y: auto;   /* scroll inside form if too long */
 }
 
-#autoLocationBtn {
-  background: linear-gradient(90deg, #1e7e34 0%, #28a745 100%);
-  color: white;
-  font-size: 0.95em;
-  padding: 10px 0;
-  margin-bottom: 12px;
-}
-
-#autoLocationBtn:hover {
-  background: linear-gradient(90deg, #155724 0%, #1e7e34 100%);
-}
-
-#autoLocationBtn:disabled {
-  background: #6c757d;
-  cursor: not-allowed;
+/* ✅ Map container should take remaining space */
+#mapContainer {
+  flex: 1 1 auto;
+  min-width: 300px;
 }
