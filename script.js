@@ -112,10 +112,10 @@ map.on('click', e => {
   document.getElementById('lon').value = e.latlng.lng.toFixed(6);
 });
 
-// Submit Report Handler
+// Submit Report Handler (with Roboflow validation)
 document.getElementById('submitBtn').addEventListener('click', async () => {
   const statusDiv = document.getElementById('submitStatus');
-  statusDiv.textContent = "Submitting...";
+  statusDiv.textContent = "Validating...";
   statusDiv.style.color = "#225af7";
 
   const email = document.getElementById('user_email').value.trim();
@@ -134,9 +134,68 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     return;
   }
 
+  // === STEP 1: Run model only for potholes/streetlight/garbage ===
+  if (["Potholes", "Streetlight", "Garbage"].includes(heading)) {
+    if (!file) {
+      statusDiv.textContent = "Please upload an image for validation!";
+      statusDiv.style.color = "#e23e29";
+      return;
+    }
+
+    // Convert file to base64
+    const base64Image = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(",")[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    try {
+      const response = await axios({
+        method: "POST",
+        url: "https://serverless.roboflow.com/garbage-and-pothole-3suhk/4",
+        params: { api_key: "ibNOv59t8NJueNejZG1s" },
+        data: base64Image,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
+      });
+
+      const predictions = response.data?.predictions || [];
+      let isValid = false;
+      let matchedConf = 0;
+
+      for (const p of predictions) {
+        if (
+          (heading === "Potholes" && p.class === "pothole") ||
+          (heading === "Streetlight" && p.class === "streetlight") ||
+          (heading === "Garbage" && p.class === "garbage")
+        ) {
+          if (p.confidence * 100 > 75) {
+            isValid = true;
+            matchedConf = (p.confidence * 100).toFixed(2);
+            break;
+          }
+        }
+      }
+
+      if (!isValid) {
+        statusDiv.textContent = "Validation failed! No valid object detected with >75% confidence.";
+        statusDiv.style.color = "#e23e29";
+        return;
+      }
+
+      statusDiv.textContent = `Validation successful (${heading} detected @ ${matchedConf}%). Submitting...`;
+      statusDiv.style.color = "#10bb72";
+
+    } catch (err) {
+      statusDiv.textContent = "Model validation error: " + err.message;
+      statusDiv.style.color = "#e23e29";
+      return;
+    }
+  }
+
+  // === STEP 2: Generate unique report number ===
   let reportNumber = candidateReportNumber;
   try {
-    // Recheck uniqueness just before submission
     if (!reportNumber) reportNumber = await generateUniqueReportNumber();
   } catch (err) {
     statusDiv.textContent = "Error generating report number! Try again.";
@@ -144,6 +203,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     return;
   }
 
+  // === STEP 3: Upload image to Supabase ===
   let image_url = null;
   try {
     if (file) {
@@ -155,6 +215,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     return;
   }
 
+  // === STEP 4: Insert record into Supabase ===
   const payload = {
     email,
     heading,
@@ -174,7 +235,8 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     statusDiv.style.color = "#e23e29";
     return;
   }
-  statusDiv.textContent = `Report submitted! Your report number is: ${reportNumber}`;
+
+  statusDiv.textContent = `✅ Report submitted! Your report number is: ${reportNumber}`;
   statusDiv.style.color = "#10bb72";
 
   if (image_url) {
@@ -187,7 +249,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   imagePreview.src = '';
   imagePreview.style.display = 'none';
 
-  setCandidateReportNumber(); // Generate new for next submission
+  setCandidateReportNumber(); // for next submission
   await loadReports();
 });
 
