@@ -11,7 +11,7 @@ html, body {
   overflow-y: auto;     /* keep vertical scrolling */
 }
 
-/* Apply animated tricolor gradient globally */
+/* Apply animated tricolor gradient globaformlly */
 html, body, main, header, #formContainer, #mapContainer {
   background: linear-gradient(145deg, #20082b, rgb(84, 63, 179), #011965);
   background-size: 400% 400%;
@@ -64,6 +64,8 @@ main {
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Form-styled box */
@@ -71,7 +73,7 @@ main {
   border-radius: 18px 0 0 18px;
   padding: 35px 24px 23px 24px;
   min-width: 320px;
-  max-width: 400px;
+  max-width: 30vw;
   width: 90vw;
   display: flex;
   flex-direction: column;
@@ -137,10 +139,11 @@ button:hover {
 #mapContainer {
   flex: 1 1;
   min-width: 290px;
+  max-width: 40vw;
   height: 100%;
   border-radius: 0 18px 18px 0;
   z-index: 1;
-  margin-left: 0;
+  margin-left: 50px;
   overflow: auto;
   box-shadow: 1px 2px 14px #0006 inset;
   position: relative;
